@@ -18,6 +18,7 @@ class Settings(BaseSettings):
 
     MAX_ITERATIONS: int = 20
     MAX_CONTEXT_FILES: int = 30
+    ROUTER_NAME: str = "rule_based_router"
 
     OPENAI_API_KEY: str = ""
 
