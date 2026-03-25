@@ -5,6 +5,7 @@ from langchain_core.messages import HumanMessage, SystemMessage, ToolMessage
 from agent.llm import get_llm
 from agent.prompts.executor_prompt import EXECUTOR_SYSTEM_PROMPT
 from agent.state import AgentState
+from config.settings import settings
 from tools import get_all_tools
 
 
@@ -35,9 +36,19 @@ async def _execute_tool_calls(tool_calls: list[dict]) -> tuple[list[dict], list[
             except Exception as exc:
                 output = f"❌ 工具执行失败: {exc}"
 
-        result = {"tool": tool_name, "args": args, "output": str(output)}
+        output_text = str(output)
+        result = {"tool": tool_name, "args": args, "output": output_text}
         results.append(result)
-        tool_messages.append(ToolMessage(content=str(output), tool_call_id=tool_id))
+
+        model_output = output_text
+        limit = max(settings.TOOL_OUTPUT_MODEL_MAX_CHARS, 0)
+        if limit and len(model_output) > limit:
+            model_output = (
+                model_output[:limit]
+                + f"\n\n...(工具输出过长，已截断 {len(model_output) - limit} 字符)"
+            )
+
+        tool_messages.append(ToolMessage(content=model_output, tool_call_id=tool_id))
 
     return results, tool_messages
 
@@ -87,9 +98,8 @@ async def run(state: AgentState) -> dict:
             next_state["last_error"] = "工具执行失败，请重新规划"
     else:
         updated_plan = plan.copy()
-        updated_plan["current_step"] += 1
-        if updated_plan["current_step"] >= len(updated_plan["steps"]):
-            updated_plan["completed"] = True
+        updated_plan["current_step"] = len(updated_plan.get("steps", []))
+        updated_plan["completed"] = True
         next_state["task_plan"] = updated_plan
 
     return next_state

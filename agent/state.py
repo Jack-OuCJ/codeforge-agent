@@ -28,5 +28,3 @@ class AgentState(TypedDict):
     tool_results: list[dict]
     last_error: Optional[str]
     iteration_count: int
-    final_response: Optional[str]
-    pending_approval: Optional[dict]

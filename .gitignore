@@ -42,3 +42,7 @@ dist/
 # Notes / temp
 .notes/
 notes/
+dataset/
+scripts/
+CLAUDE.md
+history/*
