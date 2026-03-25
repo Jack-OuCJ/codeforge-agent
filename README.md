@@ -86,6 +86,9 @@ source ~/.zshrc
 | `BAILIAN_COMPATIBLE_BASE_URL` | | `https://dashscope.aliyuncs.com/compatible-mode/v1` | 百炼 OpenAI 兼容接口地址 |
 | `MINIMAX_API_KEY` | | — | 使用 MiniMax 时填写 |
 | `MINIMAX_MODEL` | | `MiniMax-M2.7` | MiniMax 主模型 |
+| `BAILIAN_KNOWLEDGE_BASE_IDS` | | — | 百炼知识库 ID，多个用英文逗号分隔 |
+| `ENABLE_RAG` | | `true` | 是否开启 RAG 检索 |
+| `RAG_USE_MODEL_GATE` | | `true` | 由模型自动判断是否需要调用 RAG |
 | `TEMPERATURE` | | `0.0` | 模型温度（越低越确定性） |
 | `MAX_TOKENS` | | `0` | 单次生成 token 上限，`0` 表示由服务端决定 |
 | `MAX_ITERATIONS` | | `20` | 智能体最大执行迭代次数 |
@@ -95,6 +98,22 @@ source ~/.zshrc
 | `TOOL_OUTPUT_MODEL_MAX_CHARS` | | `0` | 工具结果回传模型的最大字符数，`0` 不截断 |
 
 完整配置模板见 [config/.env.example](config/.env.example)。
+
+### RAG 知识库配置（可选）
+
+1. 在[阿里云百炼控制台](https://bailian.console.aliyun.com/)创建并准备好知识库
+2. 将知识库 ID 写入配置：
+
+```bash
+BAILIAN_KNOWLEDGE_BASE_IDS=id1,id2,id3
+BAILIAN_KNOWLEDGE_BASE_PROMPT=请基于知识库回答
+```
+
+3. 在 `AGENT` 模式下提问知识库内存在的问题，若返回知识库内容则配置生效
+
+> 设置 `ENABLE_RAG=false` 可完全关闭 RAG；`RAG_USE_MODEL_GATE=true` 时仅在模型判断需要时才调用检索。
+
+---
 
 ## 使用
 
@@ -176,6 +195,7 @@ CLI 入口 (cli/app.py)
               └─ Executor 节点：ReAct 模式 + 工具调用
 
 工具层 (tools/)：bash、文件读写编辑、glob/grep 搜索、patch、测试执行
+RAG 层  (rag/) ：阿里百炼知识库检索
 ```
 
 ---
